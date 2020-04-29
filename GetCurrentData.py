@@ -1,3 +1,11 @@
+'''
+Ticker list is the stocks we show.
+
+Can add a function that retrieves stock of any company
+entered (as long as we know its symbol)
+
+We can also set number of months
+'''
 import yfinance as yf
 import datetime as dt
 import pandas as pd
@@ -6,12 +14,12 @@ yf.pdr_override()
 files = []
 
 today = str(dt.date.today())
-before = str(dt.date.today() - pd.offsets.DateOffset(months=9)).split(" ")[0]
+before = str(dt.date.today() - pd.offsets.DateOffset(months=72)).split(" ")[0]
 #print(today)
 #print(before)
 
-ticker_list = ['AAPL','GOOGL','FB','AMZN','MSFT','SSNLF','INTC','WMT']
-#Apple, Google, Facebook, Amazon, Microsoft, Samsung, Intel, Wallmart
+ticker_list = ['AAPL','GOOGL','FB','AMZN','MSFT','T','INTC','WMT','GM','JPM']
+#Apple, Google, Facebook, Amazon, Microsoft, AT&T, Intel, Wallmart, General Motors, JP Morgan
 
 def getData(ticker):
 	print(ticker)
