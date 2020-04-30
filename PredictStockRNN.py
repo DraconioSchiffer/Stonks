@@ -139,7 +139,7 @@ f = copy.deepcopy(series[len(series)-window_size:len(series)])
 maxtime = time[len(time)-1] + 1
 newtime = [len(series)-1]
 prediction = [b[len(b)-1]]
-for i in range(5):    #Here range is number of days 
+for i in range(no_days):    #Here range is number of days 
   a = model_forecast(model, f[...,np.newaxis], window_size)  
   ele = a[:,-1,0]
   newele = np.ndarray.tolist(ele)[0]
