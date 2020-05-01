@@ -3,11 +3,12 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 import numpy as np
 import copy
+import math
 
-def plot_series(time, series, start=0, end=None, format="-"):
-  plt.plot(time[start:end], series[start:end], format)
+def plot_series(time, series, start=0, end=None, format="-", label = ""):
+  plt.plot(time[start:end], series[start:end], format, label = label)
   plt.xlabel("Time")
-  plt.ylabel("Value")
+  plt.ylabel("Price")
   plt.grid(True)  
 
 def windowed_dataset(series, window_size, batch_size, shuffle_buffer):
@@ -38,6 +39,7 @@ stock = pd.read_csv('data/' + st[choice] + '.csv')
 time_stamp = stock['Date']
 series = stock['Adj Close']
 series = np.array(series)
+
 time = []
 for i in range(len(series)):
   time.append(i)
@@ -45,6 +47,12 @@ plot_series(time,series)
 plt.title(st[choice] + " stock from " + time_stamp[0] + " to " + time_stamp[len(time_stamp)-1])
 plt.show()
 trt = input("Press Enter to continue")
+
+dividing_factor = math.floor(max(series)/300)
+if dividing_factor == 0:
+  dividing_factor = 1
+
+series /= dividing_factor
 
 split_time = 1300
 time_train = time[:split_time]   #WE ARE TRAINING THE WHOLE SERIES THIS IS JUST FOR VISUALIZATION PURPOSE
@@ -86,6 +94,7 @@ history = model.fit(train_set, epochs=100, callbacks=[lr_schedule])
 
 #Seeing lr to get optimum lr
 plt.semilogx(history.history["lr"], history.history["loss"])
+plt.title("Choose learning rate at a stable point")
 plt.show()
 
 
@@ -121,6 +130,7 @@ history = model.fit(train_set, epochs=150)
 rnn_forecast = model_forecast(model, series[..., np.newaxis], window_size)  #Adds a new dimension. The ... is called an ellipses object
 b = rnn_forecast[:,-1,0]
 rnn_forecast = rnn_forecast[split_time - window_size:-1, -1, 0]
+'''
 plt.figure(figsize=(10, 6))
 plot_series(time,series)
 plot_series(time[window_size-1:],b)
@@ -130,7 +140,7 @@ plot_series(time_valid,rnn_forecast)
 #plt.axis([0,35,0,100])
 #plot_series(newtime, prediction)
 plt.show()
-
+'''
 
 #predict number of days
 print("\n(Note: Increasing number of days increases error)")
@@ -148,15 +158,23 @@ for i in range(no_days):    #Here range is number of days
   maxtime+=1
   f = f[1:]  
   f = np.append(f,ele)  
-#print(newtime)
-#print(prediction)
+print(newtime)
+print(prediction)
 
 plt.figure(figsize=(10, 6))
-plot_series(time,series)
-plot_series(time[window_size-1:],b)
+#------------------
+series *= dividing_factor
+b *= dividing_factor
+prediction = np.array(prediction)
+prediction *= dividing_factor
+#-----------------
+plot_series(time,series, label = "Real stock data")
+plot_series(time[window_size-1:],b, label = "Predicted stock data")
 #plot_series(time_valid, x_valid)
 #plot_series(time_valid,rnn_forecast)
 #plt.axis([1470,1520,50,60])
 #plt.axis([0,35,0,100])
-plot_series(newtime, prediction)
+plot_series(newtime, prediction, label = "Future prediction")
+plt.legend(loc = "upper left")
+plt.title("Final prediction")
 plt.show()
