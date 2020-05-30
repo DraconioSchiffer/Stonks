@@ -5,6 +5,9 @@ import time
 from string import punctuation
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
+from datetime import date
+from datetime import timedelta
+from datetime import datetime
 
 class Da_tweets:
 	
@@ -70,7 +73,7 @@ class Da_tweets:
 			tweets_fetched = self.twitter_api.GetSearch(raw_query = keyword)
 			print('fetched ' + str(len(tweets_fetched)) + ' tweets for ' + keyword)			
 			for status in tweets_fetched:
-				self.normal_tweets.append({'text':status.full_text,'id':status.id ,'label':None})							
+				self.normal_tweets.append({'text':status.full_text,'id':status.id,'date':status.created_at,'label':None})							
 			self._preprocess_tweets()
 		except:
 			print('Some unfortunate event happened RIP maybe internet issues or stuff')
@@ -104,6 +107,35 @@ class Da_tweets:
 		for key in tweet.keys():
 			tweetkeys.append(key)
 		return tweetkeys
+
+
+	def getWeekTweets(self,company):		
+		tdate = date.today()
+		week = timedelta(7)
+		odate = tdate - week		
+		tweetCnt = 0
+
+		self.normal_tweets = []
+		query = 'q=to%3A' + company + '%20-filter%3Alinks' + '&since=' + str(odate) + '&count=100'
+		self.build_testset_keyword(query)
+		tweetCnt = len(self.normal_tweets)
+
+		last_tweet = self.normal_tweets[-1]		
+		dt = datetime.strptime(last_tweet['date'],'%a %b %d %H:%M:%S %z %Y').date()		
+					
+					
+		while(dt > odate):			
+			query = 'q=to%3A' + company + '%20-filter%3Alinks' + '&since=' + str(odate) + '&max_id=' + str(last_tweet['id']) + '&count=100'
+			self.build_testset_keyword(query)							
+			if(tweetCnt == len(self.normal_tweets)):
+				break
+			tweetCnt = len(self.normal_tweets)
+			last_tweet = self.normal_tweets[-1]
+			dt = datetime.strptime(last_tweet['date'],'%a %b %d %H:%M:%S %z %Y').date()			
+			print(dt)
+		
+		
+		self._preprocess_tweets()
 
 
 
@@ -174,34 +206,10 @@ if __name__=='__main__':
 	companies = ['Apple','Amazon','Facebook','GoldmanSachs','Google','Intel','jpmorgan','Microsoft','Tesla','Samsung','Walmart']
 	users = ['CNBC','Benzinga','Stocktwits','BreakoutStocks','bespokeinvest','WSJmarkets','Stephanie_Link','nytimesbusiness','IBDinvestors','WSJdeals']
 
-	api_file = '.\\APIkeys.txt'
+	api_file = '.\\Sentiment Analysis\\APIkeys.txt'
 
 	twitter_time = Da_tweets(api_file)
-	
-	for company in companies:			
-		twitter_time.socialTweets(company)
 
-		for usernm in users:
-			twitter_time.GetUserTweets(usernm,company)
-		
-		print(len(twitter_time.normal_tweets))
+	twitter_time.getWeekTweets('Google')
 
-
-	#corpusfile = '.\\data\\corpus.csv'
-	#tweetfile = '.\\data\\tweetdata.csv'
-'''
-	for company in companies:	
-		query = 'q=' + company + '%20%23' + company + '%20%40' + company + '%20lang%3Aen%20-filter%3Alinks%20-filter%3Areplies&'		
-		twitter_time.build_testset_keyword(query)		
-		comptweetsfile = '.\\data\\' + company + '_tweets.csv'		
-		with open(comptweetsfile,'w') as csvfile:
-			lineWriter = csv.writer(csvfile,delimiter=',',quotechar="\"")
-			for tweet in twitter_time.normal_tweets:
-				try:
-					lineWriter.writerow([tweet["text"],tweet["label"]])
-				except Exception as e:
-						print(e)
-'''		
-	
-	#twitter_time.print_processed_tweets()
-	 
+	#twitter_time.print_tweets()
