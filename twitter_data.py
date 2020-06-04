@@ -8,6 +8,7 @@ from nltk.corpus import stopwords
 from datetime import date
 from datetime import timedelta
 from datetime import datetime
+import pandas as pd 
 
 class Da_tweets:
 	
@@ -86,7 +87,7 @@ class Da_tweets:
 			temp_tweet = re.sub('((www\.[^\s]+)|(https?://[^\s]+))', 'URL', temp_tweet) 
 			temp_tweet = re.sub('@[^\s]+', 'AT_USER', temp_tweet)
 			temp_tweet = re.sub(r'#([^\s]+)', r'\1', temp_tweet) 
-			temp_tweet = word_tokenize(temp_tweet) 
+			temp_tweet = word_tokenize(temp_tweet)
 			self.processed_tweets.append(([word for word in temp_tweet if word not in self._stopwords],tweet['label']))
 
 
@@ -206,10 +207,14 @@ if __name__=='__main__':
 	companies = ['Apple','Amazon','Facebook','GoldmanSachs','Google','Intel','jpmorgan','Microsoft','Tesla','Samsung','Walmart']
 	users = ['CNBC','Benzinga','Stocktwits','BreakoutStocks','bespokeinvest','WSJmarkets','Stephanie_Link','nytimesbusiness','IBDinvestors','WSJdeals']
 
-	api_file = '.\\Sentiment Analysis\\APIkeys.txt'
+	api_file = 'APIkeys.txt'
 
 	twitter_time = Da_tweets(api_file)
 
-	twitter_time.getWeekTweets('Google')
-
-	#twitter_time.print_tweets()
+	twitter_time.getWeekTweets('Amazon')
+	print("NORMAL")
+	twitter_time.print_tweets()
+	print("PROCESSED")
+	twitter_time.print_processed_tweets()
+	tweets = pd.DataFrame(twitter_time.normal_tweets['text'])
+	tweets.to_csv('.\\Sentiment Analysis\\recent_tweets.csv')
